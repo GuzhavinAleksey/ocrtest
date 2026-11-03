@@ -81,3 +81,26 @@ test('complete pipeline writes extracted JSON using a mock API, with one request
     assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir,'financials.json'),'utf8')),result);
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('canonical English names cover every code and ignore report wording', () => {
+  const {FORM_CODES}=require('../src/qwen');
+  const {INDICATOR_NAMES}=require('../src/indicator-names');
+  const names=[];
+  for(const [form,codes] of Object.entries(FORM_CODES)) {
+    for(const code of codes) {
+      const name=INDICATOR_NAMES[code];
+      assert.match(name,/^[a-z]+(?:_[a-z]+)*$/);
+      const first=parseModelAnswer(JSON.stringify({indicators:[{code,name:'Название из первого отчёта',values:{'2025':42}}]}),form)[0];
+      const second=parseModelAnswer(JSON.stringify({indicators:[{code,name:'Совсем другая формулировка',values:{'2025':42}}]}),form)[0];
+      assert.equal(first.name,name);
+      assert.equal(second.name,name);
+      assert.equal(first.source_name,'Название из первого отчёта');
+      assert.deepEqual(first.values,second.values);
+      names.push(name);
+    }
+  }
+  assert.equal(new Set(names).size,names.length);
+  const row=parseModelAnswer('{"indicators":[{"code":"1100","values":{"2025":123}}]}','0710001')[0];
+  assert.equal(row.name,'non_current_assets');
+  assert.equal(row.source_name,undefined);
+});

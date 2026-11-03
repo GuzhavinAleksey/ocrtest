@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { INDICATOR_NAMES } from './indicator-names';
 import OpenAI from 'openai';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -15,7 +16,9 @@ export const FORM_CODES = {
 export type FormCode = keyof typeof FORM_CODES;
 export interface Indicator {
   code: string;
+  // Канонический английский ключ определяется кодом, а не ответом модели.
   name: string;
+  source_name?: string;
   // Ключ — точный заголовок столбца (год/дата либо компонент капитала).
   values: Record<string, number | null>;
 }
@@ -56,13 +59,15 @@ export function parseModelAnswer(answer: string, form: FormCode): Indicator[] {
   const seen = new Set<string>();
   const rows = (parsed as { indicators: unknown[] }).indicators.map((row): Indicator => {
     if (!row || typeof row !== 'object') throw new Error('Некорректная строка показателя');
-    const {code, name, values} = row as Record<string, unknown>;
+    const {code, name: sourceName, values} = row as Record<string, unknown>;
     if (typeof code !== 'string' || !FORM_CODES[form].includes(code) || seen.has(code)) throw new Error(`Неизвестный или повторный код: ${code}`);
-    if (typeof name !== 'string' || !name.trim() || !values || typeof values !== 'object' || Array.isArray(values) || !Object.keys(values).length) {
-      throw new Error(`Отсутствуют название или столбцы для ${code}`);
+    if (!values || typeof values !== 'object' || Array.isArray(values) || !Object.keys(values).length) {
+      throw new Error(`Отсутствуют столбцы для ${code}`);
     }
+    const name = INDICATOR_NAMES[code];
+    if (!name) throw new Error(`Не задано стандартное название для ${code}`);
     seen.add(code);
-    return {code, name, values: Object.fromEntries(Object.entries(values).map(([column, value]) => {
+    return {code, name, ...(typeof sourceName === 'string' && sourceName.trim() ? {source_name: sourceName} : {}), values: Object.fromEntries(Object.entries(values).map(([column, value]) => {
       if (!column.trim()) throw new Error('Пустой заголовок столбца');
       return [column, parseNumber(value)];
     }))};
