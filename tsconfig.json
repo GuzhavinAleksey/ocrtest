@@ -9,8 +9,16 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2020", "DOM"],
-    "resolveJsonModule": true
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "resolveJsonModule": true,
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts"]
-} 
+  "include": [
+    "src/**/*.ts"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/qwen.ts",
+    "src/financial-data.ts",
+    "src/financial-store.ts",
+    "src/evaluate.ts",
+    "src/indicator-names.ts"
+  ]
+}

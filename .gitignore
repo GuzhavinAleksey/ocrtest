@@ -3,3 +3,6 @@ dist/
 output/
 page-*.png
 *.tsbuildinfo
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
