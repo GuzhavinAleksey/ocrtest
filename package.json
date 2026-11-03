@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node src/index.js",
-    "qwen": "ts-node src/qwen.ts"
+    "qwen": "ts-node src/qwen.ts",
+    "convert": "ts-node src/convert.ts",
+    "test": "node tests/manual-pages.test.cjs"
   },
   "keywords": [],
   "author": "",
